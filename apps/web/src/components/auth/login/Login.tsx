@@ -41,9 +41,8 @@ export function Login() {
       return;
     }
 
-    // For production, redirect to UIP Control auth domain
-    const returnUrl = encodeURIComponent(currentOrigin);
-    window.location.href = `https://auth.uipcontrol.com?return_url=${returnUrl}`;
+    // For production, redirect to UIP Control main site
+    window.location.href = "https://uipcontrol.com";
   }, [searchParams, router]);
 
   const onLoginWithEmail = async (
@@ -92,16 +91,14 @@ export function Login() {
             </p>
             <button
               onClick={() => {
-                const currentOrigin = typeof window !== "undefined" ? window.location.origin : "";
-                const returnUrl = encodeURIComponent(currentOrigin);
-                window.location.href = `https://auth.uipcontrol.com?return_url=${returnUrl}`;
+                window.location.href = "https://uipcontrol.com";
               }}
               className={cn(buttonVariants({ variant: "default" }))}
             >
               Try Again
             </button>
           </div>
-        ) : (
+        ) :
           <>
             {typeof window !== "undefined" && window.location.origin.includes("localhost") ? (
               <div className="w-full space-y-6">
@@ -114,26 +111,24 @@ export function Login() {
                 />
                 <div className="p-3 bg-blue-50 rounded-md">
                   <p className="text-xs text-blue-600 text-center">
-                    💡 <strong>Development Mode:</strong> In production, users will be redirected to your custom auth system.
+                    💡 <strong>Development Mode:</strong> In production, users will be redirected to UIP Control.
                   </p>
                 </div>
               </div>
-            ) : (
+            ) :
               <div className="text-center space-y-4 w-full">
                 <h1 className="text-2xl font-semibold tracking-tight">
                   Redirecting to UIP Control...
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  You will be redirected to auth.uipcontrol.com to sign in with your UIP Control account.
+                  You will be redirected to uipcontrol.com to sign in with your UIP Control account.
                 </p>
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                 <p className="text-xs text-muted-foreground">
                   If you are not redirected automatically, 
                   <button
                     onClick={() => {
-                      const currentOrigin = typeof window !== "undefined" ? window.location.origin : "";
-                      const returnUrl = encodeURIComponent(currentOrigin);
-                      window.location.href = `https://auth.uipcontrol.com?return_url=${returnUrl}`;
+                      window.location.href = "https://uipcontrol.com";
                     }}
                     className="text-primary underline ml-1"
                   >

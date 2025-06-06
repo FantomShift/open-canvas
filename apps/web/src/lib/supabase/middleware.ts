@@ -44,11 +44,19 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Check if this is a local development environment
+  const isLocalDev = request.nextUrl.hostname === "localhost";
+
   if (!user && !request.nextUrl.pathname.startsWith("/auth")) {
-    // no user, respond by redirecting the user to the login page
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
-    return NextResponse.redirect(url);
+    if (isLocalDev) {
+      // For local development, redirect to the local login page
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/login";
+      return NextResponse.redirect(url);
+    } else {
+      // For production, redirect directly to UIP Control
+      return NextResponse.redirect("https://uipcontrol.com");
+    }
   }
 
   if (user) {
