@@ -98,7 +98,7 @@ export function Login() {
               Try Again
             </button>
           </div>
-        ) :
+        ) : (
           <>
             {typeof window !== "undefined" && window.location.origin.includes("localhost") ? (
               <div className="w-full space-y-6">
@@ -115,7 +115,7 @@ export function Login() {
                   </p>
                 </div>
               </div>
-            ) :
+            ) : (
               <div className="text-center space-y-4 w-full">
                 <h1 className="text-2xl font-semibold tracking-tight">
                   Redirecting to UIP Control...
