@@ -46,42 +46,20 @@ export async function updateSession(request: NextRequest) {
 
   // Check if this is a local development environment
   const isLocalDev = request.nextUrl.hostname === "localhost";
-  
-  // Check if user is coming from UIP Control
-  const referrer = request.headers.get("referer");
-  const comingFromUipControl = referrer && referrer.includes("uipcontrol.com");
 
-  // Add debug headers in development
-  if (isLocalDev) {
-    supabaseResponse.headers.set("X-Debug-User", user ? "authenticated" : "unauthenticated");
-    supabaseResponse.headers.set("X-Debug-Referrer", referrer || "none");
+  // For local development, redirect unauthenticated users to login
+  if (!user && !request.nextUrl.pathname.startsWith("/auth") && isLocalDev) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/login";
+    return NextResponse.redirect(url);
   }
 
-  if (!user && !request.nextUrl.pathname.startsWith("/auth")) {
-    if (isLocalDev) {
-      // For local development, redirect to the local login page
-      const url = request.nextUrl.clone();
-      url.pathname = "/auth/login";
-      return NextResponse.redirect(url);
-    } else {
-      // For production, be more permissive when coming from UIP Control
-      if (comingFromUipControl) {
-        // Allow the request to continue - let the frontend handle authentication
-        // Don't redirect immediately, give the client-side auth a chance
-        return supabaseResponse;
-      } else {
-        // For direct visits without referrer, redirect to UIP Control
-        return NextResponse.redirect("https://uipcontrol.com");
-      }
-    }
-  }
-
+  // For authenticated users, redirect away from auth pages (except signout)
   if (user) {
     if (
       request.nextUrl.pathname.startsWith("/auth") &&
       !request.nextUrl.pathname.startsWith("/auth/signout")
     ) {
-      // user is logged in, respond by redirecting the user to the home page
       const url = new URL("/", request.url);
       return NextResponse.redirect(url);
     }

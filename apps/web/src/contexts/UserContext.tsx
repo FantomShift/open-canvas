@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useCallback,
 } from "react";
 
 type UserContentType = {
@@ -20,29 +21,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User>();
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user || typeof window === "undefined") return;
-
-    // Check if we're coming from UIP Control
-    const referrer = document.referrer;
-    const comingFromUipControl = referrer && referrer.includes("uipcontrol.com");
-    
-    getUser().then((currentUser) => {
-      // If no user found and not in development
-      if (!currentUser && !window.location.hostname.includes("localhost")) {
-        // Only redirect if user has been loading for a while and still no auth
-        // This gives more time for cross-domain authentication to work
-        if (!comingFromUipControl) {
-          // Direct visit without authentication - redirect immediately
-          window.location.href = "https://uipcontrol.com";
-        }
-        // If coming from UIP Control, don't redirect automatically
-        // Let the user interact with the page or show an error
-      }
-    });
-  }, [user]);
-
-  async function getUser() {
+  const getUser = useCallback(async () => {
     if (user) {
       setLoading(false);
       return user;
@@ -64,7 +43,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return undefined;
     }
-  }
+  }, [user]);
+
+  useEffect(() => {
+    if (user || typeof window === "undefined") return;
+    getUser();
+  }, [user, getUser]);
 
   const contextValue: UserContentType = {
     getUser,
