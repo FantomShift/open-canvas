@@ -28,9 +28,17 @@ export async function updateSession(request: NextRequest) {
           supabaseResponse = NextResponse.next({
             request,
           });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Configure cookies to be shared across uipcontrol.com subdomains in production
+            const isProduction = request.nextUrl.hostname.includes('uipcontrol.com');
+            const enhancedOptions = {
+              ...options,
+              domain: isProduction ? '.uipcontrol.com' : undefined,
+              sameSite: 'lax' as const,
+              secure: isProduction,
+            };
+            supabaseResponse.cookies.set(name, value, enhancedOptions);
+          });
         },
       },
     }
