@@ -8,7 +8,15 @@ export class StreamWorkerService {
   }
 
   async *streamData(config: StreamConfig): AsyncGenerator<any, void, unknown> {
-    this.worker.postMessage(config);
+    // Get the API URL for the worker - same logic as createClient but for worker context
+    const apiUrl = typeof window !== 'undefined' 
+      ? `${window.location.origin}/api`
+      : '/api';
+    
+    this.worker.postMessage({
+      ...config,
+      apiUrl,
+    });
 
     while (true) {
       const event: MessageEvent<StreamWorkerMessage> = await new Promise(

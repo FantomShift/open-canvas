@@ -11,6 +11,18 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Open Canvas",
   description: "Open Canvas Chat UX by LangChain",
+  icons: {
+    icon: [
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.ico' },
+    ],
+    apple: [
+      { url: '/favicon-32x32.png', sizes: '180x180', type: 'image/png' },
+    ],
+    other: [
+      { rel: 'android-chrome-192x192', url: '/android-chrome-192x192.png' },
+    ],
+  },
 };
 
 export default function RootLayout({
