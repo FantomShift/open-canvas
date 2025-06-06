@@ -51,6 +51,12 @@ export async function updateSession(request: NextRequest) {
   const referrer = request.headers.get("referer");
   const comingFromUipControl = referrer && referrer.includes("uipcontrol.com");
 
+  // Add debug headers in development
+  if (isLocalDev) {
+    supabaseResponse.headers.set("X-Debug-User", user ? "authenticated" : "unauthenticated");
+    supabaseResponse.headers.set("X-Debug-Referrer", referrer || "none");
+  }
+
   if (!user && !request.nextUrl.pathname.startsWith("/auth")) {
     if (isLocalDev) {
       // For local development, redirect to the local login page
@@ -58,13 +64,13 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/auth/login";
       return NextResponse.redirect(url);
     } else {
-      // If coming from UIP Control, try to get session from there first
+      // For production, be more permissive when coming from UIP Control
       if (comingFromUipControl) {
-        // Allow the request to continue and let the frontend handle the auth
-        // This gives the frontend a chance to establish the session
+        // Allow the request to continue - let the frontend handle authentication
+        // Don't redirect immediately, give the client-side auth a chance
         return supabaseResponse;
       } else {
-        // For direct visits, redirect to UIP Control
+        // For direct visits without referrer, redirect to UIP Control
         return NextResponse.redirect("https://uipcontrol.com");
       }
     }
