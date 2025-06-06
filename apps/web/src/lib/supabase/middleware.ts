@@ -46,6 +46,10 @@ export async function updateSession(request: NextRequest) {
 
   // Check if this is a local development environment
   const isLocalDev = request.nextUrl.hostname === "localhost";
+  
+  // Check if user is coming from UIP Control
+  const referrer = request.headers.get("referer");
+  const comingFromUipControl = referrer && referrer.includes("uipcontrol.com");
 
   if (!user && !request.nextUrl.pathname.startsWith("/auth")) {
     if (isLocalDev) {
@@ -54,8 +58,15 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/auth/login";
       return NextResponse.redirect(url);
     } else {
-      // For production, redirect directly to UIP Control
-      return NextResponse.redirect("https://uipcontrol.com");
+      // If coming from UIP Control, try to get session from there first
+      if (comingFromUipControl) {
+        // Allow the request to continue and let the frontend handle the auth
+        // This gives the frontend a chance to establish the session
+        return supabaseResponse;
+      } else {
+        // For direct visits, redirect to UIP Control
+        return NextResponse.redirect("https://uipcontrol.com");
+      }
     }
   }
 

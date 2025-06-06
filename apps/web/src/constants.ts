@@ -1,5 +1,8 @@
 export const LANGGRAPH_API_URL =
-  process.env.LANGGRAPH_API_URL ?? "http://localhost:54367";
+  process.env.LANGGRAPH_API_URL ?? 
+  (process.env.NODE_ENV === "production" 
+    ? "https://uipcanvas-0d8479cf753f5299b8d114dd32638084.us.langgraph.app"
+    : "http://localhost:54367");
 // v2 is tied to the 'open-canvas-prod' deployment.
 export const ASSISTANT_ID_COOKIE = "oc_assistant_id_v2";
 // export const ASSISTANT_ID_COOKIE = "oc_assistant_id";

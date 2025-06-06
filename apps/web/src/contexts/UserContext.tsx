@@ -23,8 +23,30 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user || typeof window === "undefined") return;
 
-    getUser();
-  }, []);
+    // Check if we're coming from UIP Control
+    const referrer = document.referrer;
+    const comingFromUipControl = referrer && referrer.includes("uipcontrol.com");
+    
+    getUser().then((currentUser) => {
+      // If no user found and not in development, handle redirect
+      if (!currentUser && !window.location.hostname.includes("localhost")) {
+        // Wait a moment for any async auth to complete
+        setTimeout(() => {
+          if (!user) {
+            // If still no user after timeout, redirect to UIP Control
+            if (comingFromUipControl) {
+              // User came from UIP Control but isn't authenticated
+              // This might be a session issue, redirect back with a message
+              window.location.href = "https://uipcontrol.com?error=canvas_auth_failed";
+            } else {
+              // Direct visit without authentication
+              window.location.href = "https://uipcontrol.com";
+            }
+          }
+        }, 2000); // Give 2 seconds for auth to establish
+      }
+    });
+  }, [user]);
 
   async function getUser() {
     if (user) {
