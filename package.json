@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "dev": "concurrently \"yarn workspace @opencanvas/agents dev\" \"yarn workspace @opencanvas/web dev\" --names \"agents,web\" --prefix-colors \"cyan,magenta\"",
-    "build": "turbo build",
+    "build": "yarn workspace @opencanvas/shared build && turbo build",
+    "build:agents": "yarn workspace @opencanvas/shared build && yarn workspace @opencanvas/agents build",
     "turbo:command": "turbo",
     "format": "turbo format",
     "format:check": "turbo format:check",

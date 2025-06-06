@@ -13,6 +13,7 @@
   "private": true,
   "scripts": {
     "dev": "yarn langgraphjs dev --port 54367 --config ../../langgraph.json --no-browser",
+    "prebuild": "cd ../../packages/shared && yarn build",
     "build": "tsc",
     "clean": "echo 'Clean step skipped on Windows'",
     "format": "prettier --config .prettierrc --write \"src\" \"scripts\"",
