@@ -10,7 +10,7 @@ ctx.addEventListener("message", async (event: MessageEvent<StreamConfig>) => {
       event.data;
 
     const client = new Client({
-      apiUrl,
+      apiUrl: apiUrl || '/api',
     });
 
     const stream = client.runs.stream(threadId, assistantId, {
