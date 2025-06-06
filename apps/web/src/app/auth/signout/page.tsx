@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const router = useRouter();
   const [errorOccurred, setErrorOccurred] = useState(false);
 
   useEffect(() => {
@@ -15,7 +13,8 @@ export default function Page() {
       if (error) {
         setErrorOccurred(true);
       } else {
-        router.push("/auth/login");
+        // Redirect to UIP Control after signing out
+        window.location.href = "https://uipcontrol.com";
       }
     }
     signOut();

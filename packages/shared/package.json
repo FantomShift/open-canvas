@@ -25,8 +25,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "yarn clean && tsc",
-    "clean": "rm -rf ./dist .turbo || true",
+    "build": "tsc",
+    "clean": "echo 'Clean step skipped on Windows'",
     "format": "prettier --config .prettierrc --write \"src\"",
     "format:check": "prettier --config .prettierrc --check \"src\"",
     "lint": "eslint src",

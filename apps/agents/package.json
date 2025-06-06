@@ -13,13 +13,12 @@
   "private": true,
   "scripts": {
     "dev": "yarn langgraphjs dev --port 54367 --config ../../langgraph.json --no-browser",
-    "build": "yarn clean && tsc",
-    "clean": "rm -rf ./dist .turbo || true",
+    "build": "tsc",
+    "clean": "echo 'Clean step skipped on Windows'",
     "format": "prettier --config .prettierrc --write \"src\" \"scripts\"",
     "format:check": "prettier --config .prettierrc --check \"src\" \"scripts\"",
     "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
-    "postinstall": "yarn turbo build"
+    "lint:fix": "eslint src --fix"
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",
@@ -33,7 +32,7 @@
     "@langchain/langgraph": "^0.2.73",
     "@langchain/langgraph-sdk": "^0.0.78",
     "@langchain/ollama": "^0.2.0",
-    "@langchain/openai": "^0.4.2",
+    "@langchain/openai": "^0.4.9",
     "@mendable/firecrawl-js": "1.10.1",
     "@opencanvas/shared": "*",
     "@supabase/supabase-js": "^2.45.5",

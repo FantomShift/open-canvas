@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import NextImage from "next/image";
-import Link from "next/link";
 import { buttonVariants } from "../../ui/button";
 import { UserAuthForm } from "./user-auth-form-login";
 import { login } from "./actions";
@@ -19,6 +18,10 @@ export function Login() {
   const router = useRouter();
 
   useEffect(() => {
+    const currentOrigin = typeof window !== "undefined" ? window.location.origin : "";
+    const isLocalDev = currentOrigin.includes("localhost");
+    
+    // Check if we're coming back from UIP Control auth with an error
     const error = searchParams.get("error");
     if (error === "true") {
       setIsError(true);
@@ -29,7 +32,18 @@ export function Login() {
         `${window.location.pathname}?${newSearchParams.toString()}`,
         { scroll: false }
       );
+      return;
     }
+
+    // For local development, don't redirect immediately to allow local testing
+    if (isLocalDev) {
+      // Show a message instead of auto-redirecting
+      return;
+    }
+
+    // For production, redirect to UIP Control auth domain
+    const returnUrl = encodeURIComponent(currentOrigin);
+    window.location.href = `https://auth.uipcontrol.com?return_url=${returnUrl}`;
   }, [searchParams, router]);
 
   const onLoginWithEmail = async (
@@ -40,7 +54,7 @@ export function Login() {
   };
 
   const onLoginWithOauth = async (
-    provider: "google" | "github"
+    provider: "google" | "linkedin"
   ): Promise<void> => {
     setIsError(false);
     const client = createSupabaseClient();
@@ -55,53 +69,81 @@ export function Login() {
   };
 
   return (
-    <div className="container relative h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-      <Link
-        href="/auth/signup"
-        className={cn(
-          buttonVariants({ variant: "ghost" }),
-          "absolute md:flex hidden right-4 top-4 md:right-8 md:top-8"
-        )}
-      >
-        Signup
-      </Link>
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-        <div className="absolute inset-0 bg-zinc-900" />
-        <div className="relative z-20 flex gap-1 items-center text-lg font-medium">
+    <div className="container relative h-screen flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center space-y-6 w-full max-w-md mx-auto">
+        <div className="flex gap-2 items-center text-xl font-medium">
           <NextImage
             src="/lc_logo.jpg"
-            width={36}
-            height={36}
+            width={40}
+            height={40}
             alt="LangChain Logo"
             className="rounded-full"
           />
           Open Canvas
         </div>
-      </div>
-      <div className="lg:p-8">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-          <div className="flex flex-col space-y-2 text-center">
-            <h1 className="text-2xl font-semibold tracking-tight">Login</h1>
-            <Link
-              href="/auth/signup"
-              className={cn(
-                buttonVariants({ variant: "ghost" }),
-                "md:hidden flex"
-              )}
-            >
-              Signup
-            </Link>
-          </div>
-          <UserAuthForm
-            onLoginWithEmail={onLoginWithEmail}
-            onLoginWithOauth={onLoginWithOauth}
-          />
-          {isError && (
-            <p className="text-red-500 text-sm text-center">
-              There was an error signing into your account. Please try again.
+        
+        {isError ? (
+          <div className="text-center space-y-4 w-full">
+            <h1 className="text-2xl font-semibold tracking-tight text-red-600">
+              Authentication Error
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              There was an error with authentication. Please try again.
             </p>
-          )}
-        </div>
+            <button
+              onClick={() => {
+                const currentOrigin = typeof window !== "undefined" ? window.location.origin : "";
+                const returnUrl = encodeURIComponent(currentOrigin);
+                window.location.href = `https://auth.uipcontrol.com?return_url=${returnUrl}`;
+              }}
+              className={cn(buttonVariants({ variant: "default" }))}
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          <>
+            {typeof window !== "undefined" && window.location.origin.includes("localhost") ? (
+              <div className="w-full space-y-6">
+                <h1 className="text-2xl font-semibold tracking-tight text-center">
+                  Login (Development)
+                </h1>
+                <UserAuthForm
+                  onLoginWithEmail={onLoginWithEmail}
+                  onLoginWithOauth={onLoginWithOauth}
+                />
+                <div className="p-3 bg-blue-50 rounded-md">
+                  <p className="text-xs text-blue-600 text-center">
+                    💡 <strong>Development Mode:</strong> In production, users will be redirected to your custom auth system.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center space-y-4 w-full">
+                <h1 className="text-2xl font-semibold tracking-tight">
+                  Redirecting to UIP Control...
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  You will be redirected to auth.uipcontrol.com to sign in with your UIP Control account.
+                </p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <p className="text-xs text-muted-foreground">
+                  If you are not redirected automatically, 
+                  <button
+                    onClick={() => {
+                      const currentOrigin = typeof window !== "undefined" ? window.location.origin : "";
+                      const returnUrl = encodeURIComponent(currentOrigin);
+                      window.location.href = `https://auth.uipcontrol.com?return_url=${returnUrl}`;
+                    }}
+                    className="text-primary underline ml-1"
+                  >
+                    click here
+                  </button>
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

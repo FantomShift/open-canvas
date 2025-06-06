@@ -13,7 +13,7 @@ import { PasswordInput } from "../../ui/password-input";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   onSignupWithEmail: (input: SignupWithEmailInput) => Promise<void>;
-  onSignupWithOauth: (provider: "google" | "github") => Promise<void>;
+  onSignupWithOauth: (provider: "google" | "linkedin") => Promise<void>;
 }
 
 export function UserAuthForm({
@@ -24,13 +24,13 @@ export function UserAuthForm({
 }: UserAuthFormProps) {
   const [isEmailPasswordLoading, setEmailPasswordIsLoading] = useState(false);
   const [isGoogleLoading, setGoogleIsLoading] = useState(false);
-  const [isGithubLoading, setGithubIsLoading] = useState(false);
+  const [isLinkedInLoading, setLinkedInIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPasswordField, setShowPasswordField] = useState(false);
 
   const isLoading =
-    isEmailPasswordLoading || isGoogleLoading || isGithubLoading;
+    isEmailPasswordLoading || isGoogleLoading || isLinkedInLoading;
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
@@ -123,9 +123,9 @@ export function UserAuthForm({
       </Button>
       <Button
         onClick={async () => {
-          setGithubIsLoading(true);
-          await onSignupWithOauth("github");
-          setGithubIsLoading(false);
+          setLinkedInIsLoading(true);
+          await onSignupWithOauth("linkedin");
+          setLinkedInIsLoading(false);
         }}
         variant="outline"
         type="button"
@@ -134,9 +134,9 @@ export function UserAuthForm({
         {isLoading ? (
           <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
         ) : (
-          <Icons.gitHub className="mr-2 h-4 w-4" />
+          <span className="mr-2 text-sm font-semibold text-blue-600">in</span>
         )}{" "}
-        GitHub
+        LinkedIn
       </Button>
     </div>
   );
