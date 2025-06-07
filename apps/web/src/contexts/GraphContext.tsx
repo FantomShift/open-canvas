@@ -292,6 +292,22 @@ export function GraphProvider({ children }: { children: ReactNode }) {
       currentThreadId = newThread.thread_id;
     }
 
+    let streamArtifact = artifact;
+    if (!streamArtifact && params.messages?.length) {
+      const newArtifactContent: ArtifactMarkdownV3 = {
+        index: 1,
+        type: "text",
+        title: "New Document",
+        fullMarkdown: "",
+      };
+      const newArtifact: ArtifactV3 = {
+        currentIndex: 1,
+        contents: [newArtifactContent],
+      };
+      setArtifact(newArtifact);
+      streamArtifact = newArtifact;
+    }
+
     const messagesInput = {
       // `messages` contains the full, unfiltered list of messages
       messages: params.messages,
@@ -304,7 +320,7 @@ export function GraphProvider({ children }: { children: ReactNode }) {
     // one field for highlighted text, and one for code
     const input = {
       ...DEFAULT_INPUTS,
-      artifact,
+      artifact: streamArtifact,
       ...params,
       ...messagesInput,
       ...(selectedBlocks && {
