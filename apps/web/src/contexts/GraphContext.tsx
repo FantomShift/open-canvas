@@ -307,6 +307,20 @@ export function GraphProvider({ children }: { children: ReactNode }) {
       };
       setArtifact(newArtifact);
       streamArtifact = newArtifact;
+    } else if (!streamArtifact) {
+      // If no artifact exists and no messages, create a default one to prevent race conditions
+      const defaultArtifactContent: ArtifactMarkdownV3 = {
+        index: 1,
+        type: "text",
+        title: "New Document",
+        fullMarkdown: "",
+      };
+      const defaultArtifact: ArtifactV3 = {
+        currentIndex: 1,
+        contents: [defaultArtifactContent],
+      };
+      setArtifact(defaultArtifact);
+      streamArtifact = defaultArtifact;
     }
 
     const messagesInput = {
@@ -375,14 +389,14 @@ export function GraphProvider({ children }: { children: ReactNode }) {
       });
 
       // Variables to keep track of content specific to this stream
-      const prevCurrentContent = artifact
-        ? artifact.contents.find((a) => a.index === artifact.currentIndex)
+      const prevCurrentContent = streamArtifact
+        ? streamArtifact.contents.find((a) => a.index === streamArtifact.currentIndex)
         : undefined;
 
       // The new index of the artifact that is generating
       let newArtifactIndex = 1;
-      if (artifact) {
-        newArtifactIndex = artifact.contents.length + 1;
+      if (streamArtifact) {
+        newArtifactIndex = streamArtifact.contents.length + 1;
       }
 
       // The metadata generated when re-writing an artifact
@@ -525,9 +539,9 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               if (!message) {
                 continue;
               }
-              if (!artifact) {
+              if (!streamArtifact) {
                 console.error(
-                  "No artifacts found when updating highlighted markdown..."
+                  "No artifacts found when updating highlighted markdown, using streamArtifact..."
                 );
                 continue;
               }
@@ -540,16 +554,14 @@ export function GraphProvider({ children }: { children: ReactNode }) {
                 });
                 continue;
               }
-              if (!prevCurrentContent) {
-                toast({
-                  title: "Error",
-                  description: "Original artifact not found",
-                  variant: "destructive",
-                  duration: 5000,
-                });
-                return;
+              // Use streamArtifact to get current content if prevCurrentContent is undefined
+              const currentContent = prevCurrentContent || 
+                streamArtifact.contents.find((a) => a.index === streamArtifact.currentIndex);
+              if (!currentContent) {
+                console.error("No current content found, skipping update");
+                continue;
               }
-              if (!isArtifactMarkdownContent(prevCurrentContent)) {
+              if (!isArtifactMarkdownContent(currentContent)) {
                 toast({
                   title: "Error",
                   description: "Received non markdown block update",
@@ -598,7 +610,7 @@ export function GraphProvider({ children }: { children: ReactNode }) {
                   prev,
                   `${updatedArtifactStartContent}${updatedArtifactRestContent}`,
                   newArtifactIndex,
-                  prevCurrentContent,
+                  currentContent,
                   firstUpdateCopy
                 );
               });
@@ -609,14 +621,9 @@ export function GraphProvider({ children }: { children: ReactNode }) {
             }
 
             if (langgraphNode === "updateArtifact") {
-              if (!artifact) {
-                toast({
-                  title: "Error",
-                  description: "Original artifact not found",
-                  variant: "destructive",
-                  duration: 5000,
-                });
-                return;
+              if (!streamArtifact) {
+                console.error("No artifact found when updating code, skipping update");
+                continue;
               }
               if (!params.highlightedCode) {
                 toast({
@@ -632,16 +639,14 @@ export function GraphProvider({ children }: { children: ReactNode }) {
                 extractStreamDataChunk(nodeChunk)?.content || "";
               const { startCharIndex, endCharIndex } = params.highlightedCode;
 
-              if (!prevCurrentContent) {
-                toast({
-                  title: "Error",
-                  description: "Original artifact not found",
-                  variant: "destructive",
-                  duration: 5000,
-                });
-                return;
+              // Use streamArtifact to get current content if prevCurrentContent is undefined
+              const currentContent = prevCurrentContent || 
+                streamArtifact.contents.find((a) => a.index === streamArtifact.currentIndex);
+              if (!currentContent) {
+                console.error("No current content found, skipping code update");
+                continue;
               }
-              if (prevCurrentContent.type !== "code") {
+              if (currentContent.type !== "code") {
                 toast({
                   title: "Error",
                   description: "Received non code block update",
@@ -655,12 +660,12 @@ export function GraphProvider({ children }: { children: ReactNode }) {
                 updatedArtifactStartContent === undefined &&
                 updatedArtifactRestContent === undefined
               ) {
-                updatedArtifactStartContent = prevCurrentContent.code.slice(
+                updatedArtifactStartContent = currentContent.code.slice(
                   0,
                   startCharIndex
                 );
                 updatedArtifactRestContent =
-                  prevCurrentContent.code.slice(endCharIndex);
+                  currentContent.code.slice(endCharIndex);
               } else {
                 // One of the above have been populated, now we can update the start to contain the new text.
                 updatedArtifactStartContent += partialUpdatedContent;
@@ -678,7 +683,7 @@ export function GraphProvider({ children }: { children: ReactNode }) {
                   prev,
                   content,
                   newArtifactIndex,
-                  prevCurrentContent,
+                  currentContent,
                   firstUpdateCopy
                 );
               });
@@ -693,14 +698,9 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               taskName === "rewrite_artifact_model_call" &&
               rewriteArtifactMeta
             ) {
-              if (!artifact) {
-                toast({
-                  title: "Error",
-                  description: "Original artifact not found",
-                  variant: "destructive",
-                  duration: 5000,
-                });
-                return;
+              if (!streamArtifact) {
+                console.error("No artifact found when rewriting, skipping update");
+                continue;
               }
 
               fullNewArtifactContent +=
@@ -777,23 +777,16 @@ export function GraphProvider({ children }: { children: ReactNode }) {
                 "customAction",
               ].includes(langgraphNode)
             ) {
-              if (!artifact) {
-                toast({
-                  title: "Error",
-                  description: "Original artifact not found",
-                  variant: "destructive",
-                  duration: 5000,
-                });
-                return;
+              if (!streamArtifact) {
+                console.error("No artifact found when rewriting theme, skipping update");
+                continue;
               }
-              if (!prevCurrentContent) {
-                toast({
-                  title: "Error",
-                  description: "Original artifact not found",
-                  variant: "destructive",
-                  duration: 5000,
-                });
-                return;
+              // Use streamArtifact to get current content if prevCurrentContent is undefined
+              const currentContent = prevCurrentContent || 
+                streamArtifact.contents.find((a) => a.index === streamArtifact.currentIndex);
+              if (!currentContent) {
+                console.error("No current content found for theme rewrite, skipping update");
+                continue;
               }
 
               fullNewArtifactContent +=
@@ -815,8 +808,8 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               // Ensure we have the language to update the artifact with
               const artifactLanguage =
                 params.portLanguage ||
-                (isArtifactCodeContent(prevCurrentContent)
-                  ? prevCurrentContent.language
+                (isArtifactCodeContent(currentContent)
+                  ? currentContent.language
                   : "other");
 
               const langGraphNode = langgraphNode;
@@ -826,7 +819,7 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               } else if (langGraphNode === "rewriteArtifactTheme") {
                 artifactType = "text";
               } else {
-                artifactType = prevCurrentContent.type;
+                artifactType = currentContent.type;
               }
               const firstUpdateCopy = isFirstUpdate;
               setFirstTokenReceived(true);
@@ -841,14 +834,14 @@ export function GraphProvider({ children }: { children: ReactNode }) {
                 }
 
                 return updateRewrittenArtifact({
-                  prevArtifact: prev ?? artifact,
+                  prevArtifact: prev ?? streamArtifact,
                   newArtifactContent: content,
                   rewriteArtifactMeta: {
                     type: artifactType,
-                    title: prevCurrentContent.title,
+                    title: currentContent.title,
                     language: artifactLanguage,
                   },
-                  prevCurrentContent,
+                  prevCurrentContent: currentContent,
                   newArtifactIndex,
                   isFirstUpdate: firstUpdateCopy,
                   artifactLanguage,
