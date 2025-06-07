@@ -10,6 +10,7 @@ import {
   ArtifactType,
   ArtifactV3,
   ArtifactMarkdownV3,
+  ArtifactCodeV3,
   CustomModelConfig,
   GraphInput,
   ProgrammingLanguageOptions,
@@ -604,7 +605,17 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               setFirstTokenReceived(true);
               setArtifact((prev) => {
                 if (!prev) {
-                  throw new Error("No artifact found when updating markdown");
+                  // Create a default artifact if none exists
+                  const defaultContent: ArtifactMarkdownV3 = {
+                    index: 1,
+                    type: "text",
+                    title: "New Document",
+                    fullMarkdown: `${updatedArtifactStartContent}${updatedArtifactRestContent}`,
+                  };
+                  return {
+                    currentIndex: 1,
+                    contents: [defaultContent],
+                  };
                 }
                 return updateHighlightedMarkdown(
                   prev,
@@ -674,7 +685,21 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               setFirstTokenReceived(true);
               setArtifact((prev) => {
                 if (!prev) {
-                  throw new Error("No artifact found when updating markdown");
+                  // Create a default code artifact if none exists
+                  const content = removeCodeBlockFormatting(
+                    `${updatedArtifactStartContent}${updatedArtifactRestContent}`
+                  );
+                  const defaultContent: ArtifactCodeV3 = {
+                    index: 1,
+                    type: "code",
+                    title: "New Code",
+                    code: content,
+                    language: currentContent?.type === "code" ? currentContent.language : "javascript",
+                  };
+                  return {
+                    currentIndex: 1,
+                    contents: [defaultContent],
+                  };
                 }
                 const content = removeCodeBlockFormatting(
                   `${updatedArtifactStartContent}${updatedArtifactRestContent}`
@@ -740,7 +765,47 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               setFirstTokenReceived(true);
               setArtifact((prev) => {
                 if (!prev) {
-                  throw new Error("No artifact found when updating markdown");
+                  // Create a default artifact if none exists
+                  if (!rewriteArtifactMeta) {
+                    console.error("No rewrite artifact meta found when creating artifact");
+                    const defaultContent: ArtifactMarkdownV3 = {
+                      index: 1,
+                      type: "text",
+                      title: "New Document",
+                      fullMarkdown: newArtifactContent,
+                    };
+                    return {
+                      currentIndex: 1,
+                      contents: [defaultContent],
+                    };
+                  }
+                  
+                  let content = newArtifactContent;
+                  if (rewriteArtifactMeta.type === "code") {
+                    content = removeCodeBlockFormatting(content);
+                    const defaultContent: ArtifactCodeV3 = {
+                      index: 1,
+                      type: "code",
+                      title: rewriteArtifactMeta.title || "New Code",
+                      code: content,
+                      language: (rewriteArtifactMeta.language as ProgrammingLanguageOptions) || "javascript",
+                    };
+                    return {
+                      currentIndex: 1,
+                      contents: [defaultContent],
+                    };
+                  } else {
+                    const defaultContent: ArtifactMarkdownV3 = {
+                      index: 1,
+                      type: "text",
+                      title: rewriteArtifactMeta.title || "New Document",
+                      fullMarkdown: content,
+                    };
+                    return {
+                      currentIndex: 1,
+                      contents: [defaultContent],
+                    };
+                  }
                 }
 
                 let content = newArtifactContent;
@@ -825,7 +890,33 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               setFirstTokenReceived(true);
               setArtifact((prev) => {
                 if (!prev) {
-                  throw new Error("No artifact found when updating markdown");
+                  // Create a default artifact for theme rewriting if none exists
+                  let content = newArtifactContent;
+                  if (artifactType === "code") {
+                    content = removeCodeBlockFormatting(content);
+                    const defaultContent: ArtifactCodeV3 = {
+                      index: 1,
+                      type: "code",
+                      title: currentContent?.title || "New Code",
+                      code: content,
+                      language: artifactLanguage as ProgrammingLanguageOptions || "javascript",
+                    };
+                    return {
+                      currentIndex: 1,
+                      contents: [defaultContent],
+                    };
+                  } else {
+                    const defaultContent: ArtifactMarkdownV3 = {
+                      index: 1,
+                      type: "text",
+                      title: currentContent?.title || "New Document",
+                      fullMarkdown: content,
+                    };
+                    return {
+                      currentIndex: 1,
+                      contents: [defaultContent],
+                    };
+                  }
                 }
 
                 let content = newArtifactContent;
@@ -896,7 +987,47 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               setFirstTokenReceived(true);
               setArtifact((prev) => {
                 if (!prev) {
-                  throw new Error("No artifact found when updating markdown");
+                  // Create a default artifact if none exists for non-streaming models
+                  if (!rewriteArtifactMeta) {
+                    console.error("No rewrite artifact meta found when creating artifact");
+                    const defaultContent: ArtifactMarkdownV3 = {
+                      index: 1,
+                      type: "text",
+                      title: "New Document",
+                      fullMarkdown: fullNewArtifactContent,
+                    };
+                    return {
+                      currentIndex: 1,
+                      contents: [defaultContent],
+                    };
+                  }
+                  
+                  let content = fullNewArtifactContent;
+                  if (rewriteArtifactMeta.type === "code") {
+                    content = removeCodeBlockFormatting(content);
+                    const defaultContent: ArtifactCodeV3 = {
+                      index: 1,
+                      type: "code",
+                      title: rewriteArtifactMeta.title || "New Code",
+                      code: content,
+                      language: (rewriteArtifactMeta.language as ProgrammingLanguageOptions) || "javascript",
+                    };
+                    return {
+                      currentIndex: 1,
+                      contents: [defaultContent],
+                    };
+                  } else {
+                    const defaultContent: ArtifactMarkdownV3 = {
+                      index: 1,
+                      type: "text",
+                      title: rewriteArtifactMeta.title || "New Document",
+                      fullMarkdown: content,
+                    };
+                    return {
+                      currentIndex: 1,
+                      contents: [defaultContent],
+                    };
+                  }
                 }
 
                 let content = fullNewArtifactContent;
@@ -1001,7 +1132,17 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               setFirstTokenReceived(true);
               setArtifact((prev) => {
                 if (!prev) {
-                  throw new Error("No artifact found when updating markdown");
+                  // Create a default artifact for highlighted text update
+                  const defaultContent: ArtifactMarkdownV3 = {
+                    index: 1,
+                    type: "text",
+                    title: "New Document",
+                    fullMarkdown: `${updatedArtifactStartContent}${updatedArtifactRestContent}`,
+                  };
+                  return {
+                    currentIndex: 1,
+                    contents: [defaultContent],
+                  };
                 }
                 return updateHighlightedMarkdown(
                   prev,
@@ -1081,7 +1222,21 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               setFirstTokenReceived(true);
               setArtifact((prev) => {
                 if (!prev) {
-                  throw new Error("No artifact found when updating markdown");
+                  // Create a default code artifact for highlighted code update
+                  const content = removeCodeBlockFormatting(
+                    `${updatedArtifactStartContent}${updatedArtifactRestContent}`
+                  );
+                  const defaultContent: ArtifactCodeV3 = {
+                    index: 1,
+                    type: "code",
+                    title: "New Code",
+                    code: content,
+                    language: prevCurrentContent?.type === "code" ? prevCurrentContent.language : "javascript",
+                  };
+                  return {
+                    currentIndex: 1,
+                    contents: [defaultContent],
+                  };
                 }
                 const content = removeCodeBlockFormatting(
                   `${updatedArtifactStartContent}${updatedArtifactRestContent}`
@@ -1148,7 +1303,33 @@ export function GraphProvider({ children }: { children: ReactNode }) {
               setFirstTokenReceived(true);
               setArtifact((prev) => {
                 if (!prev) {
-                  throw new Error("No artifact found when updating markdown");
+                  // Create a default artifact for theme rewriting with non-streaming models
+                  let content = fullNewArtifactContent;
+                  if (artifactType === "code") {
+                    content = removeCodeBlockFormatting(content);
+                    const defaultContent: ArtifactCodeV3 = {
+                      index: 1,
+                      type: "code",
+                      title: prevCurrentContent?.title || "New Code",
+                      code: content,
+                      language: artifactLanguage as ProgrammingLanguageOptions || "javascript",
+                    };
+                    return {
+                      currentIndex: 1,
+                      contents: [defaultContent],
+                    };
+                  } else {
+                    const defaultContent: ArtifactMarkdownV3 = {
+                      index: 1,
+                      type: "text",
+                      title: prevCurrentContent?.title || "New Document",
+                      fullMarkdown: content,
+                    };
+                    return {
+                      currentIndex: 1,
+                      contents: [defaultContent],
+                    };
+                  }
                 }
 
                 let content = fullNewArtifactContent;
