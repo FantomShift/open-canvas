@@ -11,7 +11,14 @@ Even if the user goes from a 'text' artifact to a 'code' artifact.
 `;
 
 export const NEW_ARTIFACT_PROMPT = `You are an AI assistant tasked with generating a new artifact based on the users request.
-Ensure you use markdown syntax when appropriate, as the text you generate will be rendered in markdown.
+When generating text content (stories, articles, documents, etc.), you MUST use proper markdown formatting including:
+- Headers (# ## ###) to structure content
+- **Bold text** for emphasis and important points
+- *Italic text* for subtle emphasis
+- Lists (- or 1.) when appropriate
+- Other markdown formatting as needed
+
+The text you generate will be rendered in markdown, so proper formatting is essential for readability.
   
 Use the full chat history as context when generating the artifact.
 
@@ -106,7 +113,7 @@ Follow these rules and guidelines:
 <rules-guidelines>
 - You should respond with the ENTIRE updated artifact, with no additional text before and after.
 - Do not wrap it in any XML tags you see in this prompt.
-- You should use proper markdown syntax when appropriate, as the text you generate will be rendered in markdown. UNLESS YOU ARE WRITING CODE.
+- When generating text content, you MUST use proper markdown formatting including headers (# ## ###), **bold text**, *italic text*, lists, and other formatting as needed for readability.
 - When you generate code, a markdown renderer is NOT used so if you respond with code in markdown syntax, or wrap the code in tipple backticks it will break the UI for the user.
 - If generating code, it is imperative you never wrap it in triple backticks, or prefix/suffix it with plain text. Ensure you ONLY respond with the code.
 ${DEFAULT_CODE_PROMPT_RULES}
@@ -114,8 +121,7 @@ ${DEFAULT_CODE_PROMPT_RULES}
 
 {updateMetaPrompt}
 
-Ensure you ONLY reply with the rewritten artifact and NO other content.
-`;
+Ensure you ONLY reply with the rewritten artifact and NO other content.`;
 
 // ----- Text modification prompts -----
 
