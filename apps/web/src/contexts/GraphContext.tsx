@@ -9,6 +9,7 @@ import { reverseCleanContent } from "@/lib/normalize_string";
 import {
   ArtifactType,
   ArtifactV3,
+  ArtifactMarkdownV3,
   CustomModelConfig,
   GraphInput,
   ProgrammingLanguageOptions,
